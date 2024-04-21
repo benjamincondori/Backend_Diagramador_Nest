@@ -21,9 +21,16 @@ import { WebSocketsModule } from './web-sockets/web-sockets.module';
       username: process.env.DB_USERNAME,
       password: process.env.DB_PASSWORD,
       autoLoadEntities: true,
-      synchronize: true, //talvez no convenga que esté en true en produccion
-      //porque en produccion mas que todo modificamos con migraciones, esto 
-      //podemos manejar tambien con variables de entorno
+      synchronize: true, 
+      ssl: process.env.DB_SSL === "true",
+      extra: {
+        ssl:
+          process.env.DB_SSL === "true"
+            ? {
+                rejectUnauthorized: false,
+              }
+            : null,
+      },
     }),
     AuthModule,
     CommonModule,
