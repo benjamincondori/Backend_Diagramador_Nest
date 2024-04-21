@@ -9,6 +9,7 @@ import {
   Query,
   ParseIntPipe,
   Req,
+  ParseUUIDPipe,
 } from '@nestjs/common';
 import { DrawingService } from './drawing.service';
 import { CreateDrawingDto, UpdateDrawingDto } from './dto';
@@ -51,7 +52,7 @@ export class DrawingController {
 
   @Get(':id')
   @Auth()
-  show(@Param('id', ParseIntPipe) id: number) {
+  show(@Param('id', ParseUUIDPipe) id: string) {
     return this.drawingService.show(id);
   }
 
@@ -72,7 +73,7 @@ export class DrawingController {
   @Patch('update/:id')
   @Auth()
   update(
-    @Param('id', ParseIntPipe) id: number,
+    @Param('id', ParseUUIDPipe) id: string,
     @Body() updateDrawingDto: UpdateDrawingDto,
   ) {
     return this.drawingService.update(id, updateDrawingDto);
@@ -80,14 +81,14 @@ export class DrawingController {
 
   @Delete('delete/:id')
   @Auth()
-  remove(@Param('id', ParseIntPipe) id: number) {
+  remove(@Param('id', ParseUUIDPipe) id: string) {
     return this.drawingService.remove(id);
   }
 
   @Get('share-token/:drawingId')
   @Auth()
   shareToken(
-    @Param('drawingId', ParseIntPipe) drawingId: number,
+    @Param('drawingId', ParseUUIDPipe) drawingId: string,
     @Req() req: any,
   ) {
     const token = this.drawingService.generateTokenShareDiagram(drawingId);

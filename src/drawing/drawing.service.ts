@@ -35,7 +35,7 @@ export class DrawingService {
     return await this.drawingRepository.save(newDrawing);
   }
 
-  async show(term: number) {
+  async show(term: string) {
     const drawing = await this.drawingRepository
       .createQueryBuilder('drawing')
       .leftJoinAndSelect('drawing.user', 'user')
@@ -89,7 +89,7 @@ export class DrawingService {
     return drawings;
   }
 
-  async update(drawingId: number, updateDrawingDto: UpdateDrawingDto) {
+  async update(drawingId: string, updateDrawingDto: UpdateDrawingDto) {
     if (Object.entries(updateDrawingDto).length === 0)
       return 'Nothing to update';
 
@@ -102,7 +102,7 @@ export class DrawingService {
     };
   }
 
-  async findOne(term: number) {
+  async findOne(term: string) {
     const diagram = await this.drawingRepository
       .createQueryBuilder('drawing')
       .where('drawing.id = :id', { id: term })
@@ -110,13 +110,13 @@ export class DrawingService {
     return diagram;
   }
 
-  async remove(id: number) {
+  async remove(id: string) {
     const drawing = await this.findOne(id);
     await this.drawingRepository.remove(drawing);
     return { message: `Drawing with ${id} deleted successfully` };
   }
 
-  generateTokenShareDiagram(drawingId: number) {
+  generateTokenShareDiagram(drawingId: string) {
     const secretKey = process.env.JWT_SECRET;
     const payload = { drawingId };
     const token = this.jwtService.sign(payload, {
@@ -149,7 +149,7 @@ export class DrawingService {
     }
   }
 
-  async addCollaborator(drawingId: number, coWorkerUserId: string) {
+  async addCollaborator(drawingId: string, coWorkerUserId: string) {
     try {
       const drawing = await this.drawingRepository.findOneOrFail({
         relations: {

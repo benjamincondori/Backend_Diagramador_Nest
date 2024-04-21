@@ -10,8 +10,8 @@ import { CoWorker } from '../../co-worker/entities/co-worker.entity';
 
 @Entity('drawings')
 export class Drawing {
-  @PrimaryGeneratedColumn()
-  id: number;
+  @PrimaryGeneratedColumn('uuid')
+  id: string;
 
   @Column('text')
   name: string;
