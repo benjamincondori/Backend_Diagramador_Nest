@@ -1,9 +1,9 @@
-import { IsNumber, IsString } from "class-validator";
+import { IsString } from "class-validator";
 
 export class NewPayloadDto {
   
-  @IsNumber()
-  id: number;
+  @IsString()
+  id: string;
   
   @IsString()
   data: string;

@@ -26,26 +26,28 @@ export class WebSocketsGateway implements OnModuleInit, OnGatewayConnection, OnG
   
   async handleConnection(client: Socket) {
     const token = client.handshake.headers.authentication as string;
+    const { nameRoom } = client.handshake.query;
     let payload: JwtPayload;
     
     try {
       payload = this.jwtService.verify(token);
       await this.webSocketsService.onClientConnected(client, payload.id);
-      
-      console.log('conectado: ', client.id)
+      client.join(nameRoom);
+      console.log(`El cliente: ${client.id} se unió a la sala: ${nameRoom}`)
     } catch (error) {
       client.disconnect();
       return;
     }
     
-    this.server.emit('clients-updated', this.webSocketsService.getConnectedClients());
+    this.server.to(nameRoom).emit('clients-updated', this.webSocketsService.getConnectedClients());
   }
   
   async handleDisconnect(client: Socket) {
+    const { nameRoom } = client.handshake.query;
     await this.webSocketsService.onClientDisconnect(client.id);
-    this.server.emit('clients-updated', this.webSocketsService.getConnectedClients());
+    this.server.to(nameRoom).emit('clients-updated', this.webSocketsService.getConnectedClients());
     
-    console.log('desconectado: ', client.id)
+    console.log(`El cliente: ${client.id} se desconectó de la sala: ${nameRoom}`)
   }
   
   @SubscribeMessage('update-diagram-client')
@@ -54,15 +56,11 @@ export class WebSocketsGateway implements OnModuleInit, OnGatewayConnection, OnG
     @ConnectedSocket() client: Socket
   ) {
     const { id, data } = payload;
-    // let diagram = await this.drawingService.findOne(payload.id);
-    console.log({ cliente: client.id })
-    console.log({ data })
-    // console.log(payload.data)
-    // await this.drawingService.update(payload.id, { data: payload.data });
+    const { nameRoom } = client.handshake.query;
     
-    // diagram = await this.drawingService.findOne(payload.id);
-    // console.log({updated: diagram})
-    client.broadcast.emit('update-diagram-server', payload.data);
+    await this.drawingService.update(id, { data });
+    
+    client.to(nameRoom).emit('update-diagram-server', payload.data);
   }
   
 }
