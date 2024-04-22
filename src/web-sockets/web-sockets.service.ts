@@ -80,11 +80,11 @@ export class WebSocketsService {
     }
   }
   
-  async removeUserFromAllRooms(clientId: string) {
-    for (const roomName of Object.keys(this.roomConnectedClients)) {
-      await this.removeUserFromRoom(clientId, roomName);
-    }
-  }
+  // async removeUserFromAllRooms(clientId: string) {
+  //   for (const roomName of Object.keys(this.roomConnectedClients)) {
+  //     await this.removeUserFromRoom(clientId, roomName);
+  //   }
+  // }
 
   // Obtiene los usuarios en la sala
   private getUsersInRoom(roomName: string): UserData[] {
