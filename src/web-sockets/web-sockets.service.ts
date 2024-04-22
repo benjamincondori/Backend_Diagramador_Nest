@@ -91,20 +91,22 @@ export class WebSocketsService {
   }
 
   getConnectedClients(roomName: string) {
-    console.log(Object.values(this.roomConnectedClients));
+    // console.log(Object.values(this.roomConnectedClients));
+    console.log(this.roomConnectedClients)
+    console.log(this.roomConnectedClients[roomName])
     return this.getUsersInRoom(roomName);
     // return Object.values(this.connectedClients).map((client) => client.user);
   }
 
   // Verifica si el usuario ya tiene una conexión activa
   private checkUserConnection(user: User) {
-    for (const clientId of Object.keys(this.connectedClients)) {
-      const connectedClient = this.connectedClients[clientId];
-      if (connectedClient.user.id === user.id) {
-        connectedClient.socket.disconnect();
-        break;
-      }
-    }
+    // for (const clientId of Object.keys(this.connectedClients)) {
+    //   const connectedClient = this.connectedClients[clientId];
+    //   if (connectedClient.user.id === user.id) {
+    //     connectedClient.socket.disconnect();
+    //     break;
+    //   }
+    // }
 
     for (const roomName of Object.keys(this.roomConnectedClients)) {
       const roomClients = this.roomConnectedClients[roomName];

@@ -50,7 +50,7 @@ export class WebSocketsGateway implements OnModuleInit, OnGatewayConnection, OnG
       return;
     }
     
-    this.server.to(roomName).emit('clients-updated', this.webSocketsService.getConnectedClients(roomName));
+    client.to(roomName).emit('clients-updated', this.webSocketsService.getConnectedClients(roomName));
   }
   
   @SubscribeMessage('leave-room')
@@ -61,7 +61,7 @@ export class WebSocketsGateway implements OnModuleInit, OnGatewayConnection, OnG
     await this.webSocketsService.onClientDisconnect(client.id, roomName);
     client.leave(roomName);
     console.log(`El cliente: ${client.id} se desconectó a la sala: ${roomName}`)
-    this.server.to(roomName).emit('clients-updated', this.webSocketsService.getConnectedClients(roomName));
+    client.to(roomName).emit('clients-updated', this.webSocketsService.getConnectedClients(roomName));
   }
   
   @SubscribeMessage('update-diagram-client')
