@@ -76,21 +76,22 @@ export class WebSocketsService {
   private getUsersInRoom(roomName: string): UserData[] {
     const usersInRoom: UserData[] = [];
     const clientsInRoom = this.roomConnectedClients[roomName] || [];
-  
+
     for (const client of clientsInRoom) {
       usersInRoom.push(client.user);
     }
-  
+
     return usersInRoom;
   }
-  
+
   // Desconecta al cliente
-  async onClientDisconnect(roomName: string, clientId: string) {
-    this.removeUserFromRoom(roomName, clientId);
+  async onClientDisconnect(clientId: string, roomName: string) {
+    this.removeUserFromRoom(clientId, roomName);
     // await delete this.connectedClients[clientId];
   }
 
   getConnectedClients(roomName: string) {
+    console.log(Object.values(this.roomConnectedClients));
     return this.getUsersInRoom(roomName);
     // return Object.values(this.connectedClients).map((client) => client.user);
   }
@@ -101,6 +102,19 @@ export class WebSocketsService {
       const connectedClient = this.connectedClients[clientId];
       if (connectedClient.user.id === user.id) {
         connectedClient.socket.disconnect();
+        break;
+      }
+    }
+
+    for (const roomName of Object.keys(this.roomConnectedClients)) {
+      const roomClients = this.roomConnectedClients[roomName];
+      const isUserConnected = roomClients.some(
+        (client) => client.user.id === user.id,
+      );
+      if (isUserConnected) {
+        const client = roomClients.find((client) => client.user.id === user.id);
+        console.log(client);
+        client.socket.disconnect();
         break;
       }
     }

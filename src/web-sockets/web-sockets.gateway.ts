@@ -75,5 +75,4 @@ export class WebSocketsGateway implements OnModuleInit, OnGatewayConnection, OnG
     
     client.to(id).emit('update-diagram-server', payload.data);
   }
-  
 }
