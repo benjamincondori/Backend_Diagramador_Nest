@@ -30,13 +30,22 @@ export class WebSocketsGateway implements OnModuleInit, OnGatewayConnection, OnG
   
   async handleDisconnect(client: Socket) {
     console.log('ALguien se fue! chao chao');
-    const rooms = Object.keys(client.rooms);
-    console.log(rooms);
-    for (const roomName of rooms) {
-      await this.webSocketsService.onClientDisconnect(client.id, roomName);
-      this.server.to(roomName).emit('clients-updated', this.webSocketsService.getConnectedClients(roomName));
+    
+    const token = client.handshake.headers.authentication as string;
+    let payload: JwtPayload;
+    
+    try {
+      payload = this.jwtService.verify(token);
+      const rooms = this.webSocketsService.getAllRoomIds();
+      for (const roomName of rooms) {
+        await this.webSocketsService.removeUserFromAllRoomsById(payload.id, roomName);
+        this.server.to(roomName).emit('clients-updated', this.webSocketsService.getConnectedClients(roomName));
+      }
+    } catch (error) {
+      console.log(error.message);
+      return;
     }
-    // await this.webSocketsService.removeUserFromAllRooms(client.id);
+    
   }
   
   @SubscribeMessage('join-room')

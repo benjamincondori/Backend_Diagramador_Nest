@@ -62,6 +62,21 @@ export class WebSocketsService {
     return this.getUsersInRoom(roomName);
   }
   
+  // Remueve al usuario de todas las salas
+  async removeUserFromAllRoomsById(userId: string, roomName: string) {
+    if (this.roomConnectedClients[roomName]) {
+      for (const clientId of Object.keys(this.roomConnectedClients[roomName])) {
+        if (this.roomConnectedClients[roomName][clientId].user.id === userId) {
+          delete this.roomConnectedClients[roomName][clientId];
+        }
+      }
+      if (Object.keys(this.roomConnectedClients[roomName]).length === 0) {
+        await delete this.roomConnectedClients[roomName];
+      }
+    }
+  }
+  
+  
   // Agrega al usuario a la sala
   private addUserToRoom(roomName: string, socket: Socket, user: UserData) {
     if (!this.roomConnectedClients[roomName]) {
@@ -79,12 +94,11 @@ export class WebSocketsService {
       }
     }
   }
+
   
-  // async removeUserFromAllRooms(clientId: string) {
-  //   for (const roomName of Object.keys(this.roomConnectedClients)) {
-  //     await this.removeUserFromRoom(clientId, roomName);
-  //   }
-  // }
+  getAllRoomIds(): string[] {
+    return Object.keys(this.roomConnectedClients);
+  }
 
   // Obtiene los usuarios en la sala
   private getUsersInRoom(roomName: string): UserData[] {
