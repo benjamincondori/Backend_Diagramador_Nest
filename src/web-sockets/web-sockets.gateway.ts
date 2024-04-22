@@ -25,29 +25,43 @@ export class WebSocketsGateway implements OnModuleInit, OnGatewayConnection, OnG
   }
   
   async handleConnection(client: Socket) {
+    console.log('Hola alguien se conecto al socket 👌👌👌');
+  }
+  
+  async handleDisconnect(client: Socket) {
+    console.log('ALguien se fue! chao chao');
+  }
+  
+  @SubscribeMessage('join-room')
+  async joinRoom(
+    @MessageBody() roomName: string, 
+    @ConnectedSocket() client: Socket
+  ) {
     const token = client.handshake.headers.authentication as string;
-    const { nameRoom } = client.handshake.query;
     let payload: JwtPayload;
     
     try {
       payload = this.jwtService.verify(token);
-      await this.webSocketsService.onClientConnected(client, payload.id);
-      client.join(nameRoom);
-      console.log(`El cliente: ${client.id} se unió a la sala: ${nameRoom}`)
+      await this.webSocketsService.onClientConnected(client, payload.id, roomName);
+      client.join(roomName);
+      console.log(`El cliente: ${client.id} se unió a la sala: ${roomName}`)
     } catch (error) {
       client.disconnect();
       return;
     }
     
-    this.server.to(nameRoom).emit('clients-updated', this.webSocketsService.getConnectedClients());
+    this.server.to(roomName).emit('clients-updated', this.webSocketsService.getConnectedClients(roomName));
   }
   
-  async handleDisconnect(client: Socket) {
-    const { nameRoom } = client.handshake.query;
-    await this.webSocketsService.onClientDisconnect(client.id);
-    this.server.to(nameRoom).emit('clients-updated', this.webSocketsService.getConnectedClients());
-    
-    console.log(`El cliente: ${client.id} se desconectó de la sala: ${nameRoom}`)
+  @SubscribeMessage('leave-room')
+  async leaveRoom(
+    @MessageBody() roomName: string, 
+    @ConnectedSocket() client: Socket
+  ) {
+    await this.webSocketsService.onClientDisconnect(client.id, roomName);
+    client.leave(roomName);
+    console.log(`El cliente: ${client.id} se desconectó a la sala: ${roomName}`)
+    this.server.to(roomName).emit('clients-updated', this.webSocketsService.getConnectedClients(roomName));
   }
   
   @SubscribeMessage('update-diagram-client')
@@ -56,11 +70,10 @@ export class WebSocketsGateway implements OnModuleInit, OnGatewayConnection, OnG
     @ConnectedSocket() client: Socket
   ) {
     const { id, data } = payload;
-    const { nameRoom } = client.handshake.query;
     
     await this.drawingService.update(id, { data });
     
-    client.to(nameRoom).emit('update-diagram-server', payload.data);
+    client.to(id).emit('update-diagram-server', payload.data);
   }
   
 }

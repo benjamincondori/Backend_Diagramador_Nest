@@ -8,5 +8,8 @@ export class NewPayloadDto {
   @IsString()
   data: string;
   
+  // @IsString()
+  // roomName: string;
+  
 }
 
