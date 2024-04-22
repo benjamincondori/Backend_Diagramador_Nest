@@ -91,9 +91,7 @@ export class WebSocketsService {
   }
 
   getConnectedClients(roomName: string) {
-    // console.log(Object.values(this.roomConnectedClients));
     console.log(this.roomConnectedClients)
-    console.log(this.roomConnectedClients[roomName])
     return this.getUsersInRoom(roomName);
     // return Object.values(this.connectedClients).map((client) => client.user);
   }
