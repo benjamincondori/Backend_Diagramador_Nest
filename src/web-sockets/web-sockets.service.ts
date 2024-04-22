@@ -4,23 +4,11 @@ import { Socket } from 'socket.io';
 import { User } from 'src/auth/entities/user.entity';
 import { Repository } from 'typeorm';
 
-// interface ConnectedClients {
-//   [id: string]: {
-//     socket: Socket;
-//     user: UserData;
-//   };
-// }
-
 interface UserData {
   id: string;
   fullname: string;
   photo: string;
 }
-
-// interface RoomClients {
-//   socket: Socket;
-//   user: UserData;
-// }
 
 interface RoomClients {
   [socketId: string]: {
@@ -35,8 +23,6 @@ interface RoomMap {
 
 @Injectable()
 export class WebSocketsService {
-  // private connectedClients: ConnectedClients = {};
-  // private roomConnectedClients: { [room: string]: RoomClients[] } = {};
   private roomConnectedClients: RoomMap = {};
 
   constructor(
@@ -63,47 +49,45 @@ export class WebSocketsService {
     };
 
     this.addUserToRoom(nameRoom, client, userData);
-
-    // this.connectedClients[client.id] = {
-    //   socket: client,
-    //   user: userData,
-    // };
   }
 
+  // Desconecta al cliente
+  async onClientDisconnect(clientId: string, roomName: string) {
+    await this.removeUserFromRoom(clientId, roomName);
+  }
+
+  // Obtiene los clientes conectados en la sala
+  getConnectedClients(roomName: string) {
+    console.log(this.roomConnectedClients)
+    return this.getUsersInRoom(roomName);
+  }
+  
+  // Agrega al usuario a la sala
   private addUserToRoom(roomName: string, socket: Socket, user: UserData) {
     if (!this.roomConnectedClients[roomName]) {
       this.roomConnectedClients[roomName] = {};
     }
-    // this.roomConnectedClients[roomName].push({ socket, user });
     this.roomConnectedClients[roomName][socket.id] = { socket, user };
   }
 
-  private removeUserFromRoom(clientId: string, roomName: string) {
-    // if (this.roomConnectedClients[roomName]) {
-    //   this.roomConnectedClients[roomName] = this.roomConnectedClients[
-    //     roomName
-    //   ].filter((client) => client.socket.id !== clientId);
-    // }
-    
+  // Remueve al usuario de la sala
+  private async removeUserFromRoom(clientId: string, roomName: string) {
     if (this.roomConnectedClients[roomName] && this.roomConnectedClients[roomName][clientId]) {
       delete this.roomConnectedClients[roomName][clientId];
       if (Object.keys(this.roomConnectedClients[roomName]).length === 0) {
-        delete this.roomConnectedClients[roomName];
+        await delete this.roomConnectedClients[roomName];
       }
     }
   }
+  
+  async removeUserFromAllRooms(clientId: string) {
+    for (const roomName of Object.keys(this.roomConnectedClients)) {
+      await this.removeUserFromRoom(clientId, roomName);
+    }
+  }
 
+  // Obtiene los usuarios en la sala
   private getUsersInRoom(roomName: string): UserData[] {
-    // const usersInRoom: UserData[] = [];
-    // const clientsInRoom = this.roomConnectedClients[roomName] || [];
-
-    // for (const client of clientsInRoom) {
-    //   usersInRoom.push(client.user);
-    // }
-
-    // return usersInRoom;
-    
-    const usersInRoom: UserData[] = [];
     const clientsInRoom = this.roomConnectedClients[roomName];
     if (!clientsInRoom) {
       return [];
@@ -111,41 +95,8 @@ export class WebSocketsService {
     return Object.values(clientsInRoom).map((client) => client.user);
   }
 
-  // Desconecta al cliente
-  async onClientDisconnect(clientId: string, roomName: string) {
-    this.removeUserFromRoom(clientId, roomName);
-    // await delete this.connectedClients[clientId];
-  }
-
-  getConnectedClients(roomName: string) {
-    console.log(this.roomConnectedClients)
-    return this.getUsersInRoom(roomName);
-    // return Object.values(this.connectedClients).map((client) => client.user);
-  }
-
   // Verifica si el usuario ya tiene una conexión activa
   private checkUserConnection(user: User) {
-    // for (const clientId of Object.keys(this.connectedClients)) {
-    //   const connectedClient = this.connectedClients[clientId];
-    //   if (connectedClient.user.id === user.id) {
-    //     connectedClient.socket.disconnect();
-    //     break;
-    //   }
-    // }
-
-    // for (const roomName of Object.keys(this.roomConnectedClients)) {
-    //   const roomClients = this.roomConnectedClients[roomName];
-    //   const isUserConnected = roomClients.some(
-    //     (client) => client.user.id === user.id,
-    //   );
-    //   if (isUserConnected) {
-    //     const client = roomClients.find((client) => client.user.id === user.id);
-    //     console.log(client);
-    //     client.socket.disconnect();
-    //     break;
-    //   }
-    // }
-    
     for (const roomName of Object.keys(this.roomConnectedClients)) {
       const roomClients = this.roomConnectedClients[roomName];
       const isUserConnected = Object.values(roomClients).some(
